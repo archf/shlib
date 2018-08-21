@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+
+str_join() {
+  # Usage
+  #   join , a "b c" d #a,b c,d
+  #   join / var local tmp #var/local/tmp
+  #   join , "${FOO[@]}" #a,b,c
+  local IFS="${1}"; shift; echo "${*}";
+}
+
+# Usage: to_lower "String in quotes" RESULT_VARIABLE_NAME
+# e.g. : to_lower "Cheese shop" l1
+# echo $l1 # "cheese shop"
+to_lower()
+{
+    local __resultvar=$2
+    eval $__resultvar=$(echo "'$1'" | tr '[A-Z]' '[a-z]' )
+}
+
+# Usage: to_upper "String in quotes" RESULT_VARIABLE_NAME
+# e.g. : to_upper "Cheese shop" l1
+# echo $l1 # "CHEESE SHOP"
+to_upper()
+{
+    local __resultvar=$2
+    eval $__resultvar=$(echo "'$1'" | tr '[a-z]' '[A-Z]' )
+}

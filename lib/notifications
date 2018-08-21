@@ -1,0 +1,51 @@
+#!/usr/bin/env sh
+
+# Notifications
+
+post_to_slack() {
+  # Sends notifications via Slack
+  local _msg=${2:-$1}
+
+  if [ $# -eq 2 ]
+  then
+    local _slack_channel="""\"channel\":  \"#${1}\","""
+  else
+    local _slack_channel=
+  fi
+  echo $_slack_channel
+
+  curl --silent -X POST \
+    --output /dev/null \
+    --data-urlencode \
+    "payload={${_slack_channel} \"text\": \"${_msg}\"}" \
+    ${SLACK_URL}
+}
+
+post_to_pushover() {
+  # Sends notifications via Pushover
+  # Requires a file named 'pushover.conf' be placed in project directory'
+  # Usage: pushover "Title Goes Here" "Message Goes Here"
+  #
+  # Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
+  if [ ! -f "${SOURCEPATH}/../etc/pushover.conf" ]; then
+   error "Please locate the pushover.conf to send notifications to Pushover."
+  else
+    # Grab variables from the config file
+    source "${SOURCEPATH}/../etc/pushover.conf"
+
+    # Send to Pushover
+    PUSHOVERURL="https://api.pushover.net/1/messages.json"
+    API_KEY="${PUSHOVER_API_KEY}"
+    USER_KEY="${PUSHOVER_USER_KEY}"
+    DEVICE=""
+    TITLE="${1}"
+    MESSAGE="${2}"
+  curl --silent -X POST \
+      -F "token=${API_KEY}" \
+      -F "user=${USER_KEY}" \
+      -F "device=${DEVICE}" \
+      -F "title=${TITLE}" \
+      -F "message=${MESSAGE}" \
+      "${PUSHOVERURL}" > /dev/null 2>&1
+  fi
+}

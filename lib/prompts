@@ -1,0 +1,54 @@
+#!/usr/bin/env sh
+
+# prompts
+
+prompt_confirm_default_continue() {
+  [ "${FORCE}" ] && return 0
+  echo "Do you want to continue [Y/n]?"
+  read -r ans
+  case "$ans" in
+    ^[nN]$)
+      notice "Script manually aborted. Exiting"
+      return 1 ;;
+    *)
+      notice "Continuing"; return 0 ;;
+  esac
+}
+
+prompt_confirm_default_exit() {
+  [ "${FORCE}" ] && return 1
+  echo "Do you want to continue [y/N]?"
+  read -r ans
+  case "$ans" in
+    ^[yY]$)
+      notice "Continuing"; return 1 ;;
+    *)
+      # default option
+      notice "Script manually aborted. Exiting"
+      return 0 ;;
+  esac
+}
+
+skip() {
+  local REPLY=noskip
+  read -t 5 -n 1 -s -p "${bold}To skip, press ${underline}X${reset}${bold} within 5 seconds.${reset}"
+  if [ "$REPLY" =~ ^[Xx]$ ]; then
+    notice "  Skipping!"
+    return 0
+  else
+    notice "  Continuing..."
+    return 1
+  fi
+}
+
+function pause() {
+  # A simple function used to pause a script at any point and
+  # only continue on user input
+  seek_confirmation "Ready to continue?"
+  if is_confirmed; then
+    info "Continuing"
+  else
+    warning "Exiting Script."
+    safeExit
+  fi
+}
