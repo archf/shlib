@@ -13,7 +13,6 @@ DEBUG=${DEBUG:-}
 # Defaulting to 'warning'. Can be controled by setting the verbosity level.
 # Set to '7' to debug argument parsing (tip set it on the CLI).
 VERBOSE=${VERBOSE:-4} # 7 = debug -> 0 = emergency
-VERBOSE=7
 FORCE=${FORCE:-}
 NOCOLOR=${NOCOLOR:-}
 
