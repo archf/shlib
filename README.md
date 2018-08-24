@@ -1,10 +1,12 @@
 # shlib
 
+Reusable shell script boilerplate and shell snippets.
+
 ## Features & Guidelines
 
 - All template provided functions syntax are meant to be as portable as possible.
   To run a `dash` script simply edit the shebang.
-- Pure shell implementatin perefered over usage of external programs ( `date`,
+- Pure shell implementation preferred over usage of external programs ( `date`,
     `readlink`,...) to avoid extra I/O operations and scheduling of OS processes.
 - Provided more than needed. Need less? Just delete what you don't want.
 
@@ -16,12 +18,12 @@ all capital case. E.g.:
   - `DEBUG`
   - `FORCE`
   - ...
-- Function names are prefixed by a single underscore '`_`' unless they are meant for public consumtions
-  and/or are relevants public entrypoints. (e.g.: `function _my_private_func () {true;}`)
+- Function names are prefixed by a single underscore '`_`' unless they are meant for public consumption
+  and/or are relevant public entry points. (e.g.: `function _my_private_func () {true;}`)
 - Variables names are prefixed by a double underscore '`__`'  unless the scope is function
   local. ( e.g.: `__my_script_var='foo'`).
 
-- Safety first spirit. Shell options below are enabled by default when theyr
+- Safety first spirit. Shell options below are enabled by default when they
   are available.
 
 ```
@@ -45,9 +47,14 @@ set -o nounset
   - `__path__` -> Script directory derived from `__file__`.
   - `__name__` -> Program name based on `__file__` basename.
   - `__version__` -> Script version string. Will be read in file
-  `${__path__}/${__version__}` if it exists. Altenatively, you may define it
+  `${__path__}/${__version__}` if it exists. Alternatively, you may define it
   directly in your script.
   - `__doc__` -> Script usage script. Displayed by the `_usage` function.
+
+## Shell snippets
+
+Copy paste in your script useful shell snippets packaged as functions and
+grouped by category in the `lib` directory.
 
 ## Usage
 
@@ -57,11 +64,11 @@ set -o nounset
 2. Customize it deleting what you don't need.
 3. Code what you need.
 
-### Method 2.
+### Method 2: Source it from your script.
 
-Source it from your script. In that case you should move `_parse_args` and
-`parse_options` functions inside your script. This is most probably the way to
-go to in order to break subcommands in distinct files.
+Move `_parse_args` and `parse_options` functions as well as anything that is
+specific to your script to your actual script file. This is most probably the
+way to go to in order to break subcommands in distinct files.
 
 ## Todo
 
