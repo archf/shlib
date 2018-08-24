@@ -4,7 +4,7 @@
 
 - All template provided functions syntax are meant to be as portable as possible.
   To run a `dash` script simply edit the shebang.
-- Pure shell implemetatin perefered over usage of external programs ( `date`,
+- Pure shell implementatin perefered over usage of external programs ( `date`,
     `readlink`,...) to avoid extra I/O operations and scheduling of OS processes.
 - Provided more than needed. Need less? Just delete what you don't want.
 
@@ -16,7 +16,7 @@ all capital case. E.g.:
   - `DEBUG`
   - `FORCE`
   - ...
-- Function names are prefixed by a single underscore '`_`' unless they meant for public consumtions
+- Function names are prefixed by a single underscore '`_`' unless they are meant for public consumtions
   and/or are relevants public entrypoints. (e.g.: `function _my_private_func () {true;}`)
 - Variables names are prefixed by a double underscore '`__`'  unless the scope is function
   local. ( e.g.: `__my_script_var='foo'`).
