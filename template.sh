@@ -3,10 +3,6 @@
 # Usage:
 #  VERBOSE=7 ./template.sh -v 7
 
-# todo:
-#   - feat: add trap templates
-#   - feat: exportable 'main' by the name of $0 in bash
-
 ### Environment variables
 ##############################################################################
 DEBUG=${DEBUG:-}
@@ -16,8 +12,9 @@ VERBOSE=${VERBOSE:-4} # 7 = debug -> 0 = emergency
 FORCE=${FORCE:-}
 NOCOLOR=${NOCOLOR:-}
 
-### Options
+### Shell Options and script meta variables
 ##############################################################################
+
 # Exit immediately on error. Same as '-e'. Use of '|| true' may be handy.
 set -o errexit
 
@@ -30,10 +27,10 @@ set -o errexit
 [ -n "${BASH_VERSION}" ] && set -o pipefail
 
 # Errors on unset variables and parameters. Same as '-u'. Use '${VAR:-}'.
+#   - feat: exportable 'main' by the name of $0 in bash
 set -o nounset
 
-### Global variables
-
+# mac osx path handling
 if [ "${OSTYPE:-}" = darwin* ]; then
   alias date=/usr/bin/date
   alias readlink=/usr/bin/readlink
@@ -42,7 +39,6 @@ else
   alias readlink=/bin/readlink
 fi
 
-# fixme: handle correct setting of attributes when sourcing from other script
 __file__=$(readlink --no-newline --canonicalize-existing "${0}")
 __path__=${__file__%/*}
 __name__="${0##*/}"
@@ -62,8 +58,6 @@ if [ -z "${LS_COLORS:-}" ]; then
   [ -z "${LS_COLORS:-}" ] && NOCOLOR="${NOCOLOR:-}" || true
 fi
 
-### Functions
-
 __color_info="\\e[32m"
 __color_notice="\\e[34m"
 __color_warning="\\e[33m"
@@ -74,6 +68,8 @@ __color_alert="\\e[1;33;41m"
 __color_emergency="\\e[1;4;5;33;41m"
 __color_reset="\\033[0m"
 __color_bold="\\E[1m"
+
+### Functions
 
 _log() {
   local log_level="${1}"
@@ -140,8 +136,8 @@ _normalize_args() {
   debug "_normalize_args output args: '$__argv'"
 }
 
-# do_test test_fct <log_level> arg1 arg2 ... argN
 do_test() {
+  # do_test test_fct <log_level> arg1 arg2 ... argN
   local fct=$1; shift
   case $1 in
     debug|info|notice|warning|error|critical|alert|emergency)

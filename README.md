@@ -1,35 +1,76 @@
 # shlib
 
-# Features & Guidelines
+## Features & Guidelines
 
-- All default provided functions syntax are meant to be as portable as possible. As such all To
-run a `dash` script.
-- When possible pure shell is perefered over usarge of external programs ( `date`, `readlink`,...)
-to avoid extra I/O operations and scheduling of OS processes.
-- A little more is provided but you may delete the extra stuff you need
+- All template provided functions syntax are meant to be as portable as possible.
+  To run a `dash` script simply edit the shebang.
+- Pure shell implemetatin perefered over usage of external programs ( `date`,
+    `readlink`,...) to avoid extra I/O operations and scheduling of OS processes.
+- Provided more than needed. Need less? Just delete what you don't want.
 
-Conventions
+## Conventions
 
 - External environmental variables that may influence the script behavior are
-all capital case
+all capital case. E.g.:
   - `VERBOSE`
   - `DEBUG`
   - `FORCE`
   - ...
+- Function names are prefixed by a single underscore '`_`' unless they meant for public consumtions
+  and/or are relevants public entrypoints. (e.g.: `function _my_private_func () {true;}`)
+- Variables names are prefixed by a double underscore '`__`'  unless the scope is function
+  local. ( e.g.: `__my_script_var='foo'`).
 
-- Private functions not meant te be consumed directly (after sourcing) begin by
-a '`_`' (e.g.: `function _my_private_func () { }`)
+- Safety first spirit. Shell options below are enabled by default when theyr
+  are available.
+
+```
+# Exit immediately on error. Same as '-e'. Use of '|| true' may be handy.
+set -o errexit
+
+# Any trap on ERR is inherited by any functions or subshells. Available on bash
+# only.
+[ -n "${BASH_VERSION}" ] && set -o errtrace || true
+
+# Return value of a pipeline is the one of right most cmd with non-zero exit
+# code.  Available on bash only.
+[ -n "${BASH_VERSION}" ] && set -o pipefail
+
+# Errors on unset variables and parameters. Same as '-u'. Use '${VAR:-}'.
+set -o nounset
+```
+
 - Provide useful attributes as variables akin to python's one:
-  - `__file__` -> fully qualified script path after symlink resolution
-  - `__name__` -> program name based on `__file__` basename
-  - `__path__` -> script directory derived from `__file__`.
-  - `__version__` -> script version. Will be read in file `${__path__}/${__version__}` if it exists. Altenatively, you may define it directly in your script.
-  - `__doc__` -> script usage script
+  - `__file__` -> Fully qualified script path after symlink resolution.
+  - `__path__` -> Script directory derived from `__file__`.
+  - `__name__` -> Program name based on `__file__` basename.
+  - `__version__` -> Script version string. Will be read in file
+  `${__path__}/${__version__}` if it exists. Altenatively, you may define it
+  directly in your script.
+  - `__doc__` -> Script usage script. Displayed by the `_usage` function.
 
 ## Usage
 
+### Methode #1: Edit the template.
+
+1. Copy and rename the `template.sh` script.
+2. Customize it deleting what you don't need.
+3. Code what you need.
+
+### Method 2.
+
+Source it from your script. In that case you should move `_parse_args` and
+`parse_options` functions inside your script. This is most probably the way to
+go to in order to break subcommands in distinct files.
+
 ## Todo
 
-- print timestamps in debug mode
-- add systemd unit templates for easy daemonizing
-- namespacing support (sourcing multiple scripts)?
+- better STDERR color toggling support
+- trap handling functions template
+- namespacing support (sourcing multiple scripts)
+- exportable 'main' by the name of $0 (bash only)
+- add systemd unit file templates for easy daemonizing
+- provide a distinct flavor for easier usage of method 2.
+  - 1 base template
+  - 1 template that sources the base template
+  - 1 template that is a standalone script template and a result of the concatenation of the previous 2 files
