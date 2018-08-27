@@ -8,7 +8,7 @@
 DEBUG=${DEBUG:-}
 # Defaulting to 'warning'. Can be controled by setting the verbosity level.
 # Set to '7' to debug argument parsing (tip set it on the CLI).
-VERBOSE=${VERBOSE:-4} # 7 = debug -> 0 = emergency
+VERBOSE=${VERBOSE:-6} # 7 = debug -> 0 = emergency
 FORCE=${FORCE:-}
 NOCOLOR=${NOCOLOR:-}
 
@@ -51,7 +51,7 @@ fi
 
 if [ -z "${LS_COLORS:-}" ]; then
   # Try and see if there is color support
-  if [ ! -x /usr/bin/dircolors >2&1>/dev/null ]; then
+  if [ ! -x /usr/bin/dircolors >/dev/null 2>&1 ]; then
     [ -r ~/.dircolors ] && eval "$(/usr/bin/dircolors -b ~/.dircolors)" \
       || eval "$(/usr/bin/dircolors -b)"
   fi
@@ -101,6 +101,13 @@ warning()   { [ "${VERBOSE}" -ge 4 ] && _log warning "$@"; true; }
 notice()    { [ "${VERBOSE}" -ge 5 ] && _log notice "$@"; true; }
 info()      { [ "${VERBOSE}" -ge 6 ] && _log info "$@"; true; }
 debug()     { [ "${VERBOSE}" -ge 7 ] && _log debug "$@"; true; }
+
+# logging system alternative.
+verbose() {
+  if [ -n "$VERBOSE" ]; then
+    printf "%s\n" "$*" 1>&2
+  fi
+}
 
 die_with_status () {
 	local status=$1; shift
@@ -159,11 +166,11 @@ is_cmd() {
   local cmd=${1}
   local log_level=${2:-'debug'}
   debug "searching for '$1' cmd on system"
-  if ! type "${cmd}" > /dev/null 1>2; then
+  if ! type "${cmd}" >/dev/null 2>&1; then
     $log_level "cmd '${cmd}' is undefined."
     return 1
   fi
-  $log_level "found $1 on system!"
+  debug "found $1 on system!"
   return 0
 }
 
@@ -227,8 +234,9 @@ OPTIONS
 CMD
   list  list stuff
   show  show stuff
-  set   set stuff
-  get   get stuff
+  test_log          Test and showcase various 'log_level' output
+  test_is_defined   Test the 'is_defined' provided function
+  test_is_cmd       Test the 'is_cmd' provided function
 "
 
 _parse_options() {
@@ -281,7 +289,11 @@ _parse_args() {
     case $1 in
       # parse global options allowed after subcommand
       show|list) shift; _parse_options $; set -- "${__argv:-}" ;;
-    do_something) shift; __somevar=$1;;
+      do_something) shift; __somevar=$1;;
+      test_log) _test_log;;
+      test_is_defined) _test_is_defined;;
+      test_is_cmd) _test_is_cmd;;
+      *) die "Invalid positional argument: '$1'" ;;
       --) shift; break;;
     esac
     shift
@@ -290,8 +302,7 @@ _parse_args() {
   debug "_parse_args remaining args: '$@'"
 }
 
-_pre_exec_hook() {
-
+_hook_pre_exec() {
   ### Runtime
   #############################################################################
   info "script '__name__ ': ${__name__}"
@@ -299,13 +310,14 @@ _pre_exec_hook() {
   info "script '__path__': ${__path__}"
   info "script '__version__': ${__version__}"
   # info "script '__doc__': \n${__doc__}"
-
   info "Verbosity level: ${VERBOSE}"
   info "Debug mode: ${DEBUG}"
   info "Dry-run mode: ${DRY_RUN:-}"
   info "Force: ${FORCE:-}"
   info "Quiet: ${Quiet:-}"
+}
 
+_test_log() {
   # All of these go to STDERR so you can safely pipe STDOUT to other software.
   debug "Messages that contain information normally of use only when \n\
           debugging a program."
@@ -321,20 +333,27 @@ _pre_exec_hook() {
           network connection). "
   emergency "Panic condition (e.g.: System is unusable).Multiple \n\
           apps servers or sites are affected."
-
-  # # Abort script if any required commands are missing.
-  # do_test is_cmd warning wget bar \
-  #   || die "aborting... missing required 'cmd'."
-
-  # # Abort script if any required variables are undefined.
-  # foo=bar; baz=
-  # do_test is_defined warning foo baz \
-  #    || die "aborting... missing required variable."
 }
 
-do_smgthg() {
-  true
+_test_is_cmd() {
+  # Abort script if any required commands are missing.
+  info 'Testing availabity of cmd: "do_test is_cmd warning wget bar"'
+  do_test is_cmd warning wget bar \
+    || die "aborting... missing required 'cmd'."
 }
+
+_test_is_defined() {
+  # Abort script if any required variables are undefined.
+  info 'Defining vars: "foo=bar; baz="'
+  foo=bar; baz=
+  info 'Testing for defined variables: "do_test is_defined warning foo baz"'
+  do_test is_defined warning foo baz \
+       || die "aborting... missing required variable."
+}
+
+# template.sh() {
+#   echo 'Running "template.sh"'
+# }
 
 main() {
 
@@ -342,13 +361,19 @@ main() {
     _usage; exit 0
   fi
 
-  # parse script positional args and set args to to what remains
+  # Parse script positional args and set args to to what remains
   _parse_args $@; set -- "${__argv:-}";
-  _pre_exec_hook
+
+  # Depending on logic flow you want to achieve, remainder of
+  _hook_pre_exec
 
   ### begin actual script below ###
-  # do_smgthg
+  # template.sh
 
 }
 
-[ "${__name__}" = "template.sh" ] && main $@ || true
+if [ "${__name__}" = "template.sh" ]; then
+  main $@
+else
+  [ -n "${BASH_VERSION:-}" ] && export -f template.sh || true
+fi
