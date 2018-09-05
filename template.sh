@@ -6,7 +6,7 @@
 ### Environment variables
 ##############################################################################
 DEBUG=${DEBUG:-}
-# Defaulting to 'warning'. Can be controled by setting the verbosity level.
+# Defaulting to 'INFO'. Can be controled by setting the verbosity level.
 # Set to '7' to debug argument parsing (tip set it on the CLI).
 VERBOSE=${VERBOSE:-6} # 7 = debug -> 0 = emergency
 FORCE=${FORCE:-}
@@ -39,14 +39,23 @@ else
   alias readlink=/bin/readlink
 fi
 
-__file__=$(readlink --no-newline --canonicalize-existing "${0}")
-__path__=${__file__%/*}
-__name__="${0##*/}"
+# handling cases where $0 is bash|sh. E.g.: when sourcing.
+if [ -f "${0}" ]; then
+  __file__=$(readlink --no-newline --canonicalize-existing "${0}")
+fi
 
-if [ -r ${__path__}/VERSION ]; then
-  __version__=$(< "${__path__}/VERSION")
-else
-  __version__=
+if [ ! -f "${0}" -a -f "${1:-}" ]; then
+  __file__=$(readlink -o-no-newline --canonicalize-existing "${1}")
+fi
+
+if [ -n "${__file__:-}" ]; then
+  __name__="${__file__##*/}"
+  __path__=${__file__%/*} || true
+  if [ -r ${__path__}/VERSION ]; then
+    __version__=$(< "${__path__}/VERSION")
+  else
+    __version__=
+  fi
 fi
 
 if [ -z "${LS_COLORS:-}" ]; then
@@ -118,6 +127,8 @@ die_with_status () {
 die() {
 	die_with_status 1 "$@"
 }
+
+_is_option() { case ${1:-} in -*) return 0;; *)  return 1;; esac; }
 
 _normalize_args() {
   # Allow more flavorfull argparsing capabilities
@@ -205,7 +216,6 @@ run() {
   fi
 }
 
-_is_option() { case ${1:-} in -*) return 0;; *)  return 1;; esac; }
 _version() { echo "${__version__:-No version string available}" 1>&2; }
 _usage() { echo "${__doc__:-No usage available}" 1>&2; }
 
@@ -215,21 +225,23 @@ __doc__="\
 This is an example help text. Provide the needed informations for your users
 
 USAGE
-  ${__name__} [OPTIONS] cmd ARGS
+  ${__name__:-CMD} [OPTIONS] ARGS
 
 OPTIONS
-  -h|--help             Display this help and exit
-  -V|--version          Output version information
+  -h|--help             Display this help and exit.
+  -V|--version          Output version information.
   -v|--verbose [level]  Increase verbosity level as per standart severity
                         levels. Accepts a number ranging from 1 to 7.
+  -n|-D|--dry-run       Dry run. Print what would be executed.
   -x|--debug            Enable shell tracing mode (set -O xtrace) at beginning
                         of main.
   -f|--force            Skip all user interaction. Implied 'Yes' to all actions.
-  -u|--username <username>  Prompt for username
-  -p|--password <password>  Propmt for password
+  -u|--username <username>  Prompt for username.
+  -p|--password <password>  Propmt for password.
   -q|--quiet            Supresse STDOUT output.
 
-  -m|--markdown         Output to STDOUT commands and results as markdown cells
+  -m|--markdown         Output to STDOUT commands and results as markdown
+                        cells.
 
 CMD
   list  list stuff
@@ -253,7 +265,7 @@ _parse_options() {
         fi ;;
 
       # convenient options
-      -D|--dry-run) DRY_RUN=true;;
+      -D|-n|--dry-run) DRY_RUN=true;;
       -f|--force) FORCE=true;;
       -x|--debug) DEBUG=true;;
       -q|--quite) QUIET=true;;
@@ -305,16 +317,16 @@ _parse_args() {
 _hook_pre_exec() {
   ### Runtime
   #############################################################################
-  info "script '__name__ ': ${__name__}"
-  info "script '__file__': ${__file__}"
-  info "script '__path__': ${__path__}"
-  info "script '__version__': ${__version__}"
+  info "script '__name__ ': ${__name__:-}"
+  info "script '__file__': ${__file__:-}"
+  info "script '__path__': ${__path__:-}"
+  info "script '__version__': ${__version__:-}"
   # info "script '__doc__': \n${__doc__}"
   info "Verbosity level: ${VERBOSE}"
   info "Debug mode: ${DEBUG}"
   info "Dry-run mode: ${DRY_RUN:-}"
   info "Force: ${FORCE:-}"
-  info "Quiet: ${Quiet:-}"
+  info "Quiet: ${QUIET:-}"
 }
 
 _test_log() {
@@ -351,9 +363,10 @@ _test_is_defined() {
        || die "aborting... missing required variable."
 }
 
-# template.sh() {
-#   echo 'Running "template.sh"'
-# }
+template.sh() {
+  echo 'Running "template.sh"'
+  main
+}
 
 main() {
 
@@ -364,7 +377,7 @@ main() {
   # Parse script positional args and set args to to what remains
   _parse_args $@; set -- "${__argv:-}";
 
-  # Depending on logic flow you want to achieve, remainder of
+  # Print main script flags
   _hook_pre_exec
 
   ### begin actual script below ###
@@ -372,7 +385,7 @@ main() {
 
 }
 
-if [ "${__name__}" = "template.sh" ]; then
+if [ "${__name__:-}" = "template.sh" ]; then
   main $@
 else
   [ -n "${BASH_VERSION:-}" ] && export -f template.sh || true
