@@ -322,11 +322,11 @@ _hook_pre_exec() {
   info "script '__path__': ${__path__:-}"
   info "script '__version__': ${__version__:-}"
   # info "script '__doc__': \n${__doc__}"
-  info "Verbosity level: ${VERBOSE}"
-  info "Debug mode: ${DEBUG}"
-  info "Dry-run mode: ${DRY_RUN:-}"
-  info "Force: ${FORCE:-}"
-  info "Quiet: ${QUIET:-}"
+  info "'VERBOSE': ${VERBOSE}"
+  info "'DEBUG': ${DEBUG}"
+  info "'DRY_RUN': ${DRY_RUN:-}"
+  info "'FORCE': ${FORCE:-}"
+  info "'QUIET': ${QUIET:-}"
 }
 
 _test_log() {
@@ -381,7 +381,7 @@ main() {
   _hook_pre_exec
 
   ### begin actual script below ###
-  # template.sh
+  template.sh
 
 }
 
