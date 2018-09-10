@@ -132,7 +132,7 @@ _is_option() { case ${1:-} in -*) return 0;; *)  return 1;; esac; }
 
 _normalize_args() {
   # Allow more flavorfull argparsing capabilities
-  debug "_normalize_args input args: '$@'"
+  debug "_normalize_args input args: '$*'"
   while [ $# -gt 0 ]; do
     case $1 in
       # break '-xyz' into '-x -y -z'
@@ -253,7 +253,7 @@ CMD
 
 _parse_options() {
   # Parse short and long options. May be called multiple times.
-  debug "_parse_options input args: '$@'"
+  debug "_parse_options input args: $*"
   while _is_option ${1:-}; do
     case $1 in
       -h|--help) _usage; exit 0;;
@@ -289,7 +289,7 @@ _parse_options() {
 
 _parse_args() {
   # Parse script options and args. Call this from your main().
-  debug "_parse_args input args: '$@'"
+  debug "_parse_args input args: '$*'"
   _normalize_args $@; set -- "${__argv:-}"
 
   # parse script global options and set args to to what remains
