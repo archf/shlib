@@ -140,12 +140,11 @@ _normalize_args() {
         OPTIND=1
         while getopts ${1#-} opt "$1"; do
           __argv="${__argv:-} -${opt}"
-        done
-        ;;
+        done ;;
       # break --foo=bar style long options
-      --?*=*) __argv="${__argv:-} ${1%%=*} ${1#*=}" ;;
+      --?*=*) __argv="${__argv:-} ${1%%=*} ${1#*=}";;
       # add other args exactly as they are
-      *) __argv="${__argv:-} ${1}" ;;
+      *) __argv="${__argv:-} ${1}";;
     esac
     shift
   done
@@ -159,7 +158,7 @@ do_test() {
   local fct=$1; shift
   case $1 in
     debug|info|notice|warning|error|critical|alert|emergency)
-      local log_level=${1}; shift ;;
+      local log_level=${1}; shift;;
   esac
 
   # return on first failing
@@ -257,7 +256,7 @@ _parse_options() {
   while _is_option ${1:-}; do
     case $1 in
       -h|--help) _usage; exit 0;;
-      -V|--version) _usage; exit 0 ;;
+      -V|--version) _usage; exit 0;;
       -v|--verbose)
         if [ -z "${2#?}" ]; then shift
           # will throw an error if not a single digit number
@@ -271,7 +270,7 @@ _parse_options() {
       -q|--quite) QUIET=true;;
 
       # credentials prompting
-      -u|--username) shift; username=${1} ;;
+      -u|--username) shift; username=${1};;
       -p|--password) echo "Enter Password: "; stty -echo
         read __password; stty echo; echo ;;
 
@@ -279,33 +278,33 @@ _parse_options() {
       --m|--markdown) TO_MARKDOWN=true;;
 
       --) shift; break;;
-      *) die "Invalid option: '$1'" ;;
+      *) die "Invalid option: '$1'";;
     esac
     shift
   done
   __argv=$@
-  debug "_parse_options remaining args: '$@'"
+  debug "_parse_options remaining args: '$*'"
 }
 
 _parse_args() {
   # Parse script options and args. Call this from your main().
   debug "_parse_args input args: '$*'"
-  _normalize_args $@; set -- "${__argv:-}"
+  _normalize_args $@; set -- ${__argv:-}
 
   # parse script global options and set args to to what remains
   _parse_options $@
-  set -- "${__argv:-}"
+  set -- ${__argv:-}
 
   # Parse positional args.
   while [ $# -gt 0 ]; do
     case $1 in
       # parse global options allowed after subcommand
-      show|list) shift; _parse_options $; set -- "${__argv:-}" ;;
+      show|list) shift; _parse_options $; set -- ${__argv:-};;
       do_something) shift; __somevar=$1;;
       test_log) _test_log;;
       test_is_defined) _test_is_defined;;
       test_is_cmd) _test_is_cmd;;
-      *) die "Invalid positional argument: '$1'" ;;
+      *) die "Invalid positional argument: '$1'";;
       --) shift; break;;
     esac
     shift
@@ -375,7 +374,7 @@ main() {
   fi
 
   # Parse script positional args and set args to to what remains
-  _parse_args $@; set -- "${__argv:-}";
+  _parse_args $@; set -- ${__argv:-};
 
   # Print main script flags
   _hook_pre_exec
