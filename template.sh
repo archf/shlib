@@ -200,14 +200,14 @@ is_defined() {
 run() {
   # Wrapper around command execution to allow dry-run mode and/or mardown
   # output to stdout.
-  if [ -z "${DRY_RUN:-}" -a  ]; then
+  if [ -z "${DRY_RUN:-}" ]; then
     if [ -z "${MARKDOWN:-}" ]; then
       $*
     else
       echo -e "```"; echo "$@"; $*;  echo -e "```\n"
     fi
   else
-    if [ -z "${MARKDOWN}" ]; then
+    if [ -z "${MARKDOWN:-}" ]; then
       echo "$*"
     else
       echo -e "```"; echo "$@"; echo -e "```\n"
