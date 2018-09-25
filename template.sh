@@ -128,6 +128,18 @@ die() {
 	die_with_status 1 "$@"
 }
 
+lock() {
+    local prog=$1
+    local lock_fd=${2:-200}
+    local lock_file=/run/lock/${prog}.lock
+
+    # create lock file
+    eval "exec ${lock_fd}>${lock_file}"
+
+    info "acquier the lock"
+    flock --nonblock ${lock_fd} && return 0 || return 1
+}
+
 _is_option() { case ${1:-} in -*) return 0;; *)  return 1;; esac; }
 
 _normalize_args() {
@@ -202,6 +214,7 @@ run() {
   # output to stdout.
   if [ -z "${DRY_RUN:-}" ]; then
     if [ -z "${MARKDOWN:-}" ]; then
+      debug "$*"
       $*
     else
       echo -e "```"; echo "$@"; $*;  echo -e "```\n"
@@ -321,11 +334,11 @@ _hook_pre_exec() {
   info "script '__path__': ${__path__:-}"
   info "script '__version__': ${__version__:-}"
   # info "script '__doc__': \n${__doc__}"
-  info "'VERBOSE': ${VERBOSE}"
-  info "'DEBUG': ${DEBUG}"
-  info "'DRY_RUN': ${DRY_RUN:-}"
-  info "'FORCE': ${FORCE:-}"
-  info "'QUIET': ${QUIET:-}"
+  debug "'VERBOSE': ${VERBOSE}"
+  debug "'DEBUG': ${DEBUG}"
+  debug "'DRY_RUN': ${DRY_RUN:-}"
+  debug "'FORCE': ${FORCE:-}"
+  debug "'QUIET': ${QUIET:-}"
 }
 
 _test_log() {
@@ -368,7 +381,6 @@ template.sh() {
 }
 
 main() {
-
   if [ $# -eq 0 ]; then
     _usage; exit 0
   fi
@@ -381,11 +393,12 @@ main() {
 
   ### begin actual script below ###
   template.sh
-
 }
 
 if [ "${__name__:-}" = "template.sh" ]; then
   main $@
 else
+  # Run script after importing in current shell namespace.
+  # fixme: allow multiple level of sourcing
   [ -n "${BASH_VERSION:-}" ] && export -f template.sh || true
 fi
