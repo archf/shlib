@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-# Usage:
-#  VERBOSE=7 ./template.sh -v 7
-
 ### Environment variables
-##############################################################################
 DEBUG=${DEBUG:-}
 # Defaulting to 'INFO'. Can be controled by setting the verbosity level.
 # Set to '7' to debug argument parsing (tip set it on the CLI).
@@ -12,8 +8,19 @@ VERBOSE=${VERBOSE:-6} # 7 = debug -> 0 = emergency
 FORCE=${FORCE:-}
 NOCOLOR=${NOCOLOR:-}
 
-### Shell Options and script meta variables
-##############################################################################
+# colored logging
+__color_info="\\e[32m"
+__color_notice="\\e[34m"
+__color_warning="\\e[33m"
+__color_error="\\e[31m"
+__color_error="\\e[31m"
+__color_critical="\\e[1;31m"
+__color_alert="\\e[1;33;41m"
+__color_emergency="\\e[1;4;5;33;41m"
+__color_reset="\\033[0m"
+__color_bold="\\E[1m"
+
+### Shell OPTIONS and script META variables
 
 # Exit immediately on error. Same as '-e'. Use of '|| true' may be handy.
 set -o errexit
@@ -67,19 +74,7 @@ if [ -z "${LS_COLORS:-}" ]; then
   [ -z "${LS_COLORS:-}" ] && NOCOLOR="${NOCOLOR:-}" || true
 fi
 
-__color_info="\\e[32m"
-__color_notice="\\e[34m"
-__color_warning="\\e[33m"
-__color_error="\\e[31m"
-__color_error="\\e[31m"
-__color_critical="\\e[1;31m"
-__color_alert="\\e[1;33;41m"
-__color_emergency="\\e[1;4;5;33;41m"
-__color_reset="\\033[0m"
-__color_bold="\\E[1m"
-
 ### Functions
-
 _log() {
   local log_level="${1}"
   shift
@@ -111,22 +106,15 @@ notice()    { [ "${VERBOSE}" -ge 5 ] && _log notice "$@"; true; }
 info()      { [ "${VERBOSE}" -ge 6 ] && _log info "$@"; true; }
 debug()     { [ "${VERBOSE}" -ge 7 ] && _log debug "$@"; true; }
 
-# logging system alternative.
-verbose() {
-  if [ -n "$VERBOSE" ]; then
-    printf "%s\n" "$*" 1>&2
-  fi
-}
+# Alternate simpler logging system.
+verbose() { if [ -n "$VERBOSE" ]; then printf "%s\n" "$*" 1>&2; fi; }
 
 die_with_status () {
-	local status=$1; shift
-	printf >&2 '%s\n' "$*"
-	exit "$status"
+	local status=$1
+  shift; printf >&2 '%s\n' "$*"; exit "$status"
 }
 
-die() {
-	die_with_status 1 "$@"
-}
+die() { die_with_status 1 "$@"; }
 
 lock() {
     local prog=$1
@@ -231,10 +219,28 @@ run() {
 _version() { echo "${__version__:-No version string available}" 1>&2; }
 _usage() { echo "${__doc__:-No usage available}" 1>&2; }
 
-### Argument parsing (customize as per your script input)
+_hook_pre_exec() {
+  ### Runtime
+  #############################################################################
+  info "script '__name__ ': ${__name__:-}"
+  info "script '__file__': ${__file__:-}"
+  info "script '__path__': ${__path__:-}"
+  info "script '__version__': ${__version__:-}"
+  debug "'VERBOSE': ${VERBOSE}"
+  debug "'DEBUG': ${DEBUG}"
+  debug "'DRY_RUN': ${DRY_RUN:-}"
+  debug "'FORCE': ${FORCE:-}"
+  debug "'QUIET': ${QUIET:-}"
+}
 
+# From this point below put your business value adding code.
 __doc__="\
-This is an example help text. Provide the needed informations for your users
+This script here is an example leveraging shlib core functions and is used to
+selftest shlib itself. It can be used as a genereric template if you decide to
+source the 'shlib' shell code library. As an alternative you can use the
+'shlib_template_standalone_standalone.sh' which is as the name implies a standalone
+equivalent should you need extra portability at the cost of duplictation
+maintainability and storage.
 
 USAGE
   ${__name__:-CMD} [OPTIONS] ARGS
@@ -256,8 +262,6 @@ OPTIONS
                         cells.
 
 CMD
-  list  list stuff
-  show  show stuff
   test_log          Test and showcase various 'log_level' output
   test_is_defined   Test the 'is_defined' provided function
   test_is_cmd       Test the 'is_cmd' provided function
@@ -308,12 +312,15 @@ _parse_args() {
   _parse_options $@
   set -- ${__argv:-}
 
+  # Print main script flags.
+  _hook_pre_exec
+
   # Parse positional args.
   while [ $# -gt 0 ]; do
     case $1 in
       # parse global options allowed after subcommand
       show|list) shift; _parse_options $; set -- ${__argv:-};;
-      do_something) shift; __somevar=$1;;
+      set_something) shift; __somevar=$1;;
       test_log) _test_log;;
       test_is_defined) _test_is_defined;;
       test_is_cmd) _test_is_cmd;;
@@ -324,21 +331,6 @@ _parse_args() {
   done
   __argv=$@
   debug "_parse_args remaining args: '$@'"
-}
-
-_hook_pre_exec() {
-  ### Runtime
-  #############################################################################
-  info "script '__name__ ': ${__name__:-}"
-  info "script '__file__': ${__file__:-}"
-  info "script '__path__': ${__path__:-}"
-  info "script '__version__': ${__version__:-}"
-  # info "script '__doc__': \n${__doc__}"
-  debug "'VERBOSE': ${VERBOSE}"
-  debug "'DEBUG': ${DEBUG}"
-  debug "'DRY_RUN': ${DRY_RUN:-}"
-  debug "'FORCE': ${FORCE:-}"
-  debug "'QUIET': ${QUIET:-}"
 }
 
 _test_log() {
@@ -362,7 +354,7 @@ _test_log() {
 _test_is_cmd() {
   # Abort script if any required commands are missing.
   info 'Testing availabity of cmd: "do_test is_cmd warning wget bar"'
-  do_test is_cmd warning wget bar \
+  do_test is_cmd warning bash bar \
     || die "aborting... missing required 'cmd'."
 }
 
@@ -375,30 +367,30 @@ _test_is_defined() {
        || die "aborting... missing required variable."
 }
 
-template.sh() {
-  echo 'Running "template.sh"'
+main() {
+  if [ $# -eq 0 ]; then _usage; exit 0; fi
+
+  # Parse script args setting '__argv' to remainder.
+  _parse_args $@; set -- ${__argv:-};
+
+  # Add code you want to run here. Depending on your script architecture you
+  # may however never get to this point if you branch to the desired function
+  # from the positional argument parser.
+
+  # func_a
+  # func_b
+  # do_c
+}
+
+# Customize this to match your script filename.
+shlib_template_standalone.sh() {
+  echo 'Running "shlib_template_standalone.sh"'
   main
 }
 
-main() {
-  if [ $# -eq 0 ]; then
-    _usage; exit 0
-  fi
-
-  # Parse script positional args and set args to to what remains
-  _parse_args $@; set -- ${__argv:-};
-
-  # Print main script flags
-  _hook_pre_exec
-
-  ### begin actual script below ###
-  template.sh
-}
-
-if [ "${__name__:-}" = "template.sh" ]; then
+if [ "${__name__:-}" = "shlib_template_standalone.sh" ]; then
   main $@
 else
   # Run script after importing in current shell namespace.
-  # fixme: allow multiple level of sourcing
-  [ -n "${BASH_VERSION:-}" ] && export -f template.sh || true
+  [ -n "${BASH_VERSION:-}" ] && export -f shlib_template_standalone.sh || true
 fi

@@ -58,6 +58,10 @@ grouped by category in the `lib` directory.
 
 ## Usage
 
+```
+VERBOSE=7 ./template.sh -v 7
+```
+
 ### Methode #1: Edit the template.
 
 1. Copy and rename the `template.sh` script.
@@ -75,9 +79,4 @@ way to go to in order to break subcommands in distinct files.
 - better STDERR color toggling support
 - trap handling functions template
 - namespacing support (sourcing multiple scripts)
-- exportable 'main' by the name of $0 (bash only)
 - add systemd unit file templates for easy daemonizing
-- provide a distinct flavor for easier usage of method 2.
-  - 1 base template
-  - 1 template that sources the base template
-  - 1 template that is a standalone script template and a result of the concatenation of the previous 2 files
