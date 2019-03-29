@@ -62,7 +62,7 @@ grouped by category in the `lib` directory of this repository.
 VERBOSE=7 ./template.sh -v 7
 ```
 
-### Methode #1: Use the standalone script
+### Method #1: Use the standalone script
 
 1. Copy and rename the `shlib_template_standalone.sh` script.
 2. Customize it deleting what you don't need.

@@ -4,20 +4,15 @@
 
 post_to_slack() {
   # Sends notifications via Slack
-  local _msg=${2:-$1}
-
-  if [ $# -eq 2 ]
-  then
-    local _slack_channel="""\"channel\":  \"#${1}\","""
+  local msg=${2:-$1}
+  if [ $# -eq 2 ]; then
+    local slack_channel="""\"channel\":  \"#${1}\","""
   else
-    local _slack_channel=
+    local slack_channel=
   fi
-  echo $_slack_channel
-
   curl --silent -X POST \
     --output /dev/null \
-    --data-urlencode \
-    "payload={${_slack_channel} \"text\": \"${_msg}\"}" \
+    --data-urlencode "payload={${slack_channel} \"text\": \"${msg}\"}" \
     ${SLACK_URL}
 }
 
