@@ -35,7 +35,7 @@ set -o errexit
 [ -n "${BASH_VERSION}" ] && set -o errtrace || true
 
 # Return value of a pipeline is the one of right most cmd with non-zero exit
-# code.  Available on bash only.
+# code. Available on bash only.
 [ -n "${BASH_VERSION}" ] && set -o pipefail
 
 # Errors on unset variables and parameters. Same as '-u'. Use '${VAR:-}'.
@@ -54,7 +54,7 @@ set -o nounset
 ## Shell snippets
 
 Copy paste in your script useful shell snippets packaged as functions and
-grouped by category in the `lib` directory.
+grouped by category in the `lib` directory of this repository.
 
 ## Usage
 
@@ -62,17 +62,22 @@ grouped by category in the `lib` directory.
 VERBOSE=7 ./template.sh -v 7
 ```
 
-### Methode #1: Edit the template.
+### Methode #1: Use the standalone script
 
-1. Copy and rename the `template.sh` script.
+1. Copy and rename the `shlib_template_standalone.sh` script.
 2. Customize it deleting what you don't need.
 3. Code what you need.
 
 ### Method 2: Source it from your script.
 
-Move `_parse_args` and `parse_options` functions as well as anything that is
-specific to your script to your actual script file. This is most probably the
-way to go to in order to break subcommands in distinct files.
+1. Copy and rename `shlib_template.sh`. Doing that the `shlib` library must be
+   available to be sourced. That methode makes it easier to maintain
+   your scripts if you have many in case of eventual `shlib` library update.
+2. Customize it deleting what you don't need.
+3. Code what you need.
+
+This is most probably the way to go to in order to break subcommands in
+distinct files.
 
 ## Todo
 
