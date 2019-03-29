@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 . shlib
 
 # From this point below put your business value adding code.
@@ -19,7 +20,7 @@ OPTIONS
   -v|--verbose [level]  Increase verbosity level as per standart severity
                         levels. Accepts a number ranging from 1 to 7.
   -n|-D|--dry-run       Dry run. Print what would be executed.
-  -x|--debug            Enable shell tracing mode (set -O xtrace) at beginning
+  -d|--debug            Enable shell tracing mode (set -O xtrace) at beginning
                         of main.
   -f|--force            Skip all user interaction. Implied 'Yes' to all actions.
   -u|--username <username>  Prompt for username.
@@ -51,8 +52,8 @@ _parse_options() {
       # convenient options
       -D|-n|--dry-run) DRY_RUN=true;;
       -f|--force) FORCE=true;;
-      -x|--debug) DEBUG=true;;
-      -q|--quite) QUIET=true;;
+      -d|--debug) VERBOSE=8;;
+      -q|--quiet) QUIET=true;;
 
       # credentials prompting
       -u|--username) shift; username=${1};;
