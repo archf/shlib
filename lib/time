@@ -12,17 +12,14 @@ seconds2hms() {
 stopwatch() {
   # call me twice.
   # Useful sometimes instead of time cmd or time builtin
-  if [ $# -eq 0 ];
-  then
+  if [ $# -eq 0 ]; then
     error "Expected 1 arg. Usage: $0 'start | stop'"
     return 1
   fi
-  if [ $1 = 'start' ]
-  then
+  if [ $1 = 'start' ]; then
     start_time=$(date '+%s')
     return 0
-  elif [ $1 = 'stop' ]
-  then
+  elif [ $1 = 'stop' ]; then
     end_time=$(date '+%s')
     seconds2hms $((end_time - start_time))
   else

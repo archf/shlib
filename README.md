@@ -84,4 +84,5 @@ distinct files.
 - better STDERR color toggling support
 - trap handling functions template
 - namespacing support (sourcing multiple scripts)
-- add systemd unit file templates for easy daemonizing
+- add systemd unit file template for easy daemonizing
+- add systemd timer file template for easy cron jobs
