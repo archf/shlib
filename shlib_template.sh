@@ -12,7 +12,7 @@ equivalent should you need extra portability at the cost of duplictation
 maintainability and storage.
 
 USAGE
-  ${__name__:-CMD} [OPTIONS] ARGS
+  ${__name__:-} CMD [OPTIONS] ARGS
 
 OPTIONS
   -h|--help             Display this help and exit.

@@ -30,11 +30,10 @@ set -o errexit
 [ -n "${BASH_VERSION}" ] && set -o errtrace || true
 
 # Return value of a pipeline is the one of right most cmd with non-zero exit
-# code.  Available on bash only.
+# code. Available on bash only.
 [ -n "${BASH_VERSION}" ] && set -o pipefail
 
 # Errors on unset variables and parameters. Same as '-u'. Use '${VAR:-}'.
-#   - feat: exportable 'main' by the name of $0 in bash
 set -o nounset
 
 # mac osx path handling
@@ -131,7 +130,7 @@ lock() {
 _is_option() { case ${1:-} in -*) return 0;; *)  return 1;; esac; }
 
 _normalize_args() {
-  # Allow more flavorfull argparsing capabilities
+  # Allow more flavorfull arg parsing capabilities
   debug "_normalize_args input args: '$*'"
   while [ $# -gt 0 ]; do
     case $1 in
@@ -198,19 +197,30 @@ is_defined() {
 }
 
 run() {
-  # Wrapper around command execution to allow dry-run mode and/or mardown
-  # output to stdout.
+  # Wrapper around command execution to allow
+  #   dry-run mode, mardown output | post msg to third party
   if [ -z "${DRY_RUN:-}" ]; then
     if [ -z "${MARKDOWN:-}" ]; then
+      # run cmd
+      if [ -n "${POST_SLACK_MSG:-}" ]; then
+        if type post_slack_msg >/dev/null 2>&1; then
+          post_slack_msg "$(hostnamectl --static): $*"
+        else
+          debug "post_slack_msg not found"
+        fi
+      fi
       debug "$*"
       $*
     else
+      # run cmd; output cmd and its output in markdown format
       echo -e "```"; echo "$@"; $*;  echo -e "```\n"
     fi
   else
+    # dry-run
     if [ -z "${MARKDOWN:-}" ]; then
       echo "$*"
     else
+    # dry-run; output cmd only in markdown format
       echo -e "```"; echo "$@"; echo -e "```\n"
     fi
   fi
@@ -244,7 +254,7 @@ equivalent should you need extra portability at the cost of duplictation
 maintainability and storage.
 
 USAGE
-  ${__name__:-CMD} [OPTIONS] ARGS
+  ${__name__:-} CMD [OPTIONS] ARGS
 
 OPTIONS
   -h|--help             Display this help and exit.

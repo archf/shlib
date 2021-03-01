@@ -130,7 +130,7 @@ lock() {
 _is_option() { case ${1:-} in -*) return 0;; *)  return 1;; esac; }
 
 _normalize_args() {
-  # Allow more flavorfull argparsing capabilities
+  # Allow more flavorfull arg parsing capabilities
   debug "_normalize_args input args: '$*'"
   while [ $# -gt 0 ]; do
     case $1 in
