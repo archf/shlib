@@ -27,16 +27,22 @@ all capital case. E.g.:
   are available.
 
 ```
-# Exit immediately on error. Same as '-e'. Use of '|| true' may be handy.
-set -o errexit
+# Exit immediately on error. Same as '-e'. Use of '|| true' or '|| :' may be
+# handy. We purposely avoid setting this in interactive shell. We use posix
+# compatible case statement for portability because in simple '[' tests the
+# *i* pattern would expand filenames in pwd instead...
+case "$-" in
+  *i*) :;;
+  *) [ -n "${ZSH_VERSION}" ] && setopt ERR_EXIT || set -o errexit;;
+esac
 
 # Any trap on ERR is inherited by any functions or subshells. Available on bash
 # only.
-[ -n "${BASH_VERSION}" ] && set -o errtrace || true
+[ -n "${BASH_VERSION:-}" ] && set -o errtrace || true
 
 # Return value of a pipeline is the one of right most cmd with non-zero exit
 # code. Available on bash only.
-[ -n "${BASH_VERSION}" ] && set -o pipefail
+[ -n "${BASH_VERSION:-}" ] && set -o pipefail || true
 
 # Errors on unset variables and parameters. Same as '-u'. Use '${VAR:-}'.
 set -o nounset
