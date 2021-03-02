@@ -61,7 +61,7 @@ _parse_options() {
         read __password; stty echo; echo ;;
 
       # misc
-      --m|--markdown) TO_MARKDOWN=true;;
+      --m|--markdown) MARKDOWN_OUTPUT=true;;
 
       --) shift; break;;
       *) die "Invalid option: '$1'";;
