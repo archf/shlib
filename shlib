@@ -89,7 +89,7 @@ _catch_notify() {
 
 try_cmd() {
   trap "_catch_notify $ERROR_MSG" ERR SIGINT
-  run $@
+  run $*
 }
 
 ### Functions
@@ -284,7 +284,7 @@ run() {
 
       # run cmd
       type info >/dev/null 2>&1 && info "Executing command '$*'" || :
-      "$@"
+      eval "$@"
       type info >/dev/null 2>&1 && info "Command '$*' completed!" || :
 
       # post some msg
